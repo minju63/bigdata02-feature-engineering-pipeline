@@ -1,0 +1,133 @@
+{
+  "shape": [
+    891,
+    12
+  ],
+  "dtypes": {
+    "PassengerId": "int64",
+    "Survived": "int64",
+    "Pclass": "int64",
+    "Name": "str",
+    "Sex": "str",
+    "Age": "float64",
+    "SibSp": "int64",
+    "Parch": "int64",
+    "Ticket": "str",
+    "Fare": "float64",
+    "Cabin": "str",
+    "Embarked": "str"
+  },
+  "missing": {
+    "PassengerId": 0.0,
+    "Survived": 0.0,
+    "Pclass": 0.0,
+    "Name": 0.0,
+    "Sex": 0.0,
+    "Age": 19.87,
+    "SibSp": 0.0,
+    "Parch": 0.0,
+    "Ticket": 0.0,
+    "Fare": 0.0,
+    "Cabin": 77.1,
+    "Embarked": 0.22
+  },
+  "missing_n": {
+    "PassengerId": 0,
+    "Survived": 0,
+    "Pclass": 0,
+    "Name": 0,
+    "Sex": 0,
+    "Age": 177,
+    "SibSp": 0,
+    "Parch": 0,
+    "Ticket": 0,
+    "Fare": 0,
+    "Cabin": 687,
+    "Embarked": 2
+  },
+  "target": {
+    "0": 549,
+    "1": 342
+  },
+  "target_ratio": {
+    "0": 0.6162,
+    "1": 0.3838
+  },
+  "duplicates": 0,
+  "describe": {
+    "Age": {
+      "count": 714.0,
+      "mean": 29.7,
+      "std": 14.53,
+      "min": 0.42,
+      "25%": 20.12,
+      "50%": 28.0,
+      "75%": 38.0,
+      "max": 80.0
+    },
+    "SibSp": {
+      "count": 891.0,
+      "mean": 0.52,
+      "std": 1.1,
+      "min": 0.0,
+      "25%": 0.0,
+      "50%": 0.0,
+      "75%": 1.0,
+      "max": 8.0
+    },
+    "Parch": {
+      "count": 891.0,
+      "mean": 0.38,
+      "std": 0.81,
+      "min": 0.0,
+      "25%": 0.0,
+      "50%": 0.0,
+      "75%": 0.0,
+      "max": 6.0
+    },
+    "Fare": {
+      "count": 891.0,
+      "mean": 32.2,
+      "std": 49.69,
+      "min": 0.0,
+      "25%": 7.91,
+      "50%": 14.45,
+      "75%": 31.0,
+      "max": 512.33
+    }
+  },
+  "surv_by_sex": {
+    "female": 0.742,
+    "male": 0.189
+  },
+  "surv_by_pclass": {
+    "1": 0.63,
+    "2": 0.473,
+    "3": 0.242
+  },
+  "surv_by_embarked": {
+    "C": 0.554,
+    "Q": 0.39,
+    "S": 0.337
+  },
+  "outliers_iqr": {
+    "Age": 11,
+    "SibSp": 46,
+    "Parch": 213,
+    "Fare": 116
+  },
+  "fare_skew": 4.79,
+  "age_skew": 0.39,
+  "fare_zero": 15,
+  "corr_with_target": {
+    "Pclass": -0.338,
+    "Age": -0.077,
+    "SibSp": -0.035,
+    "Parch": 0.082,
+    "Fare": 0.257
+  },
+  "surv_age_missing": {
+    "false": 0.406,
+    "true": 0.294
+  }
+}
