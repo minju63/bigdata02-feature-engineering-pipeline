@@ -135,5 +135,13 @@
     "p_pclass": 9.945340263413207e-11,
     "pclass3_share_missing": 0.768,
     "pclass3_share_present": 0.497
+  },
+  "hascabin": {
+    "n1": 204,
+    "n0": 687,
+    "surv1": 0.667,
+    "surv0": 0.3,
+    "p": 6.7419704360811776e-21,
+    "pclass1_share_has": 0.863
   }
 }

@@ -105,4 +105,25 @@ ax[1].set_title(f"Age 결측 여부별 객실 등급 구성 (p={p_cls:.1e})"); a
 ax[1].set_ylabel("비율"); ax[1].legend(title="Pclass", fontsize=8)
 plt.tight_layout(); plt.savefig(f"{OUT}/eda_age_missing.png"); plt.close()
 
+# ---- 그림 7: HasCabin(객실 번호 기록 여부)과 생존
+hc = df["Cabin"].notna().map({False: "Cabin 없음(0)", True: "Cabin 있음(1)"})
+p_hc = chi2_contingency(pd.crosstab(hc, df["Survived"]))[1]
+S["hascabin"] = {"n1": int(df["Cabin"].notna().sum()), "n0": int(df["Cabin"].isna().sum()),
+                 "surv1": round(float(df.loc[df.Cabin.notna(), "Survived"].mean()), 3),
+                 "surv0": round(float(df.loc[df.Cabin.isna(), "Survived"].mean()), 3), "p": float(p_hc),
+                 "pclass1_share_has": round(float((df.loc[df.Cabin.notna(), "Pclass"] == 1).mean()), 3)}
+json.dump(S, open(f"{OUT}/eda_summary.json", "w"), ensure_ascii=False, indent=2)
+fig, ax = plt.subplots(1, 2, figsize=(10, 3.7))
+o2 = ["Cabin 없음(0)", "Cabin 있음(1)"]
+g = df.groupby(hc)["Survived"].agg(["mean", "count"]).loc[o2]
+sns.barplot(x=g.index, y=g["mean"], ax=ax[0], color="#4C72B0", order=o2)
+for i, (m_, n_) in enumerate(zip(g["mean"], g["count"])):
+    ax[0].text(i, m_ + 0.02, f"{m_:.3f} (n={n_})", ha="center")
+ax[0].set_ylim(0, 0.85); ax[0].set_ylabel("생존율"); ax[0].set_xlabel("")
+ax[0].set_title(f"HasCabin별 생존율 (카이제곱 p={p_hc:.0e})")
+d2 = df.assign(HasCabin=hc).groupby(["Pclass", "HasCabin"])["Survived"].mean().reset_index()
+sns.barplot(data=d2, x="Pclass", y="Survived", hue="HasCabin", hue_order=o2, ax=ax[1], palette=["#999999", "#4C72B0"])
+ax[1].set_ylim(0, 1); ax[1].set_ylabel("생존율"); ax[1].set_title("객실 등급별 HasCabin 생존율"); ax[1].legend(fontsize=8)
+plt.tight_layout(); plt.savefig(f"{OUT}/eda_hascabin.png"); plt.close()
+
 print(json.dumps(S, ensure_ascii=False, indent=1))
