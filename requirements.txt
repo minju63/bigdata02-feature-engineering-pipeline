@@ -9,3 +9,4 @@ shap
 reportlab
 joblib
 pillow
+scipy

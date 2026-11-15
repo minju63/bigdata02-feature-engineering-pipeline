@@ -82,4 +82,27 @@ for a, c in zip(ax, ["Sex", "Pclass", "Embarked"]):
     a.set_ylim(0, 1); a.set_title(f"{c}별 생존율"); a.set_ylabel("생존율")
 plt.tight_layout(); plt.savefig(f"{OUT}/eda_cat_survival.png"); plt.close()
 
+# ---- 그림 6: Age 결측은 무작위인가? (결측 여부별 생존율 / 객실 등급 구성 + 카이제곱 검정)
+from scipy.stats import chi2_contingency
+miss = df["Age"].isna().map({False: "Age 있음", True: "Age 결측"})
+p_surv = chi2_contingency(pd.crosstab(miss, df["Survived"]))[1]
+p_cls = chi2_contingency(pd.crosstab(miss, df["Pclass"]))[1]
+S["age_missing_test"] = {"p_survival": float(p_surv), "p_pclass": float(p_cls),
+                         "pclass3_share_missing": round(float((df.loc[df.Age.isna(), "Pclass"] == 3).mean()), 3),
+                         "pclass3_share_present": round(float((df.loc[df.Age.notna(), "Pclass"] == 3).mean()), 3)}
+json.dump(S, open(f"{OUT}/eda_summary.json", "w"), ensure_ascii=False, indent=2)
+fig, ax = plt.subplots(1, 2, figsize=(10, 3.7))
+order = ["Age 있음", "Age 결측"]
+g = df.groupby(miss)["Survived"].agg(["mean", "count"]).loc[order]
+sns.barplot(x=g.index, y=g["mean"], ax=ax[0], color="#4C72B0", order=order)
+for i, (m_, n_) in enumerate(zip(g["mean"], g["count"])):
+    ax[0].text(i, m_ + 0.02, f"{m_:.3f} (n={n_})", ha="center")
+ax[0].set_ylim(0, 0.8); ax[0].set_ylabel("생존율"); ax[0].set_xlabel("")
+ax[0].set_title(f"Age 결측 여부별 생존율 (카이제곱 p={p_surv:.3f})")
+ct = pd.crosstab(miss, df["Pclass"], normalize="index").loc[order]
+ct.plot.bar(stacked=True, ax=ax[1], color=["#55A868", "#DD8452", "#C44E52"], rot=0)
+ax[1].set_title(f"Age 결측 여부별 객실 등급 구성 (p={p_cls:.1e})"); ax[1].set_xlabel("")
+ax[1].set_ylabel("비율"); ax[1].legend(title="Pclass", fontsize=8)
+plt.tight_layout(); plt.savefig(f"{OUT}/eda_age_missing.png"); plt.close()
+
 print(json.dumps(S, ensure_ascii=False, indent=1))

@@ -129,5 +129,11 @@
   "surv_age_missing": {
     "false": 0.406,
     "true": 0.294
+  },
+  "age_missing_test": {
+    "p_survival": 0.007682742096212262,
+    "p_pclass": 9.945340263413207e-11,
+    "pclass3_share_missing": 0.768,
+    "pclass3_share_present": 0.497
   }
 }
