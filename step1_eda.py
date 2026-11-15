@@ -54,9 +54,9 @@ ax[1].set_xticklabels(["사망(0)", "생존(1)"]); ax[1].set_title("타깃 변�
 plt.tight_layout(); plt.savefig(f"{OUT}/eda_missing_target.png"); plt.close()
 
 # ---- 그림 2: 히스토그램
-fig, ax = plt.subplots(1, 3, figsize=(12, 3.5))
-for a, c, b in zip(ax, ["Age", "Fare", "SibSp"], [30, 40, 9]):
-    sns.histplot(df[c].dropna(), bins=b, kde=(c != "SibSp"), ax=a, color="#4C72B0")
+fig, ax = plt.subplots(1, 4, figsize=(14, 3.4))
+for a, c, b in zip(ax, ["Age", "Fare", "SibSp", "Parch"], [30, 40, 9, 7]):
+    sns.histplot(df[c].dropna(), bins=b, kde=(c in ("Age", "Fare")), ax=a, color="#4C72B0")
     a.set_title(f"{c} 분포 (왜도 {df[c].skew():.2f})")
 plt.tight_layout(); plt.savefig(f"{OUT}/eda_hist.png"); plt.close()
 
@@ -125,5 +125,16 @@ d2 = df.assign(HasCabin=hc).groupby(["Pclass", "HasCabin"])["Survived"].mean().r
 sns.barplot(data=d2, x="Pclass", y="Survived", hue="HasCabin", hue_order=o2, ax=ax[1], palette=["#999999", "#4C72B0"])
 ax[1].set_ylim(0, 1); ax[1].set_ylabel("생존율"); ax[1].set_title("객실 등급별 HasCabin 생존율"); ax[1].legend(fontsize=8)
 plt.tight_layout(); plt.savefig(f"{OUT}/eda_hascabin.png"); plt.close()
+
+# ---- 그림 8: 범주형 변수 분포 (Countplot)
+S["cat_share"] = {c: (df[c].value_counts(normalize=True) * 100).round(1).to_dict() for c in ["Sex", "Pclass", "Embarked"]}
+json.dump(S, open(f"{OUT}/eda_summary.json", "w"), ensure_ascii=False, indent=2)
+fig, ax = plt.subplots(1, 3, figsize=(12, 3.4))
+for a, c in zip(ax, ["Sex", "Pclass", "Embarked"]):
+    sns.countplot(data=df, x=c, ax=a, color="#4C72B0")
+    for p_ in a.patches:
+        a.annotate(f"{int(p_.get_height())}", (p_.get_x() + p_.get_width() / 2, p_.get_height()), ha="center", va="bottom")
+    a.set_title(f"{c} 분포"); a.set_ylabel("인원 수"); a.set_xlabel("")
+plt.tight_layout(); plt.savefig(f"{OUT}/eda_count.png"); plt.close()
 
 print(json.dumps(S, ensure_ascii=False, indent=1))
