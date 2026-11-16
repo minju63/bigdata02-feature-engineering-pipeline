@@ -45,7 +45,7 @@ m = m[m > 0]
 sns.barplot(x=m.values, y=m.index, ax=ax[0], color="#4C72B0")
 for i, v in enumerate(m.values):
     ax[0].text(v + 1, i, f"{v:.1f}%", va="center")
-ax[0].set_xlim(0, 100); ax[0].set_title("결측치 비율 (%)"); ax[0].set_xlabel("")
+ax[0].set_xlim(0, 100); ax[0].set_title("결측치 비율 (%)"); ax[0].set_xlabel(""); ax[0].set_ylabel("")
 sns.countplot(x="Survived", data=df, ax=ax[1], palette=["#C44E52", "#55A868"], hue="Survived", legend=False)
 for p in ax[1].patches:
     ax[1].annotate(int(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),

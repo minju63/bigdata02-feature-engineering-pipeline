@@ -1,6 +1,9 @@
 """공통 모듈: 데이터 로드, 파생 변수, 파이프라인 빌더 (Titanic)."""
+import os
+import tempfile
 import warnings
 from functools import partial
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -20,10 +23,43 @@ from lightgbm import LGBMClassifier
 
 warnings.filterwarnings("ignore")
 SEED = 42
-DATA = "data/titanic.csv"
-OUT = "outputs"
+BASE_DIR = Path(__file__).resolve().parent          # 어느 폴더에서 실행해도 같은 경로를 쓰도록 이 파일 위치 기준
+DATA = str(BASE_DIR / "data" / "titanic.csv")
+OUT = str(BASE_DIR / "outputs")
 
-plt.rcParams["font.family"] = "Malgun Gothic"
+
+def _ascii_temp_dir():
+    """임시 폴더 경로에 한글 등이 있으면 joblib 병렬 실행이 실패하므로, 그 경우 ASCII 경로로 바꿔 준다."""
+    if tempfile.gettempdir().isascii():
+        return
+    for root in (Path(BASE_DIR.anchor or "/"), Path.home()):
+        alt = root / "joblib_tmp"
+        try:
+            alt.mkdir(exist_ok=True)
+        except OSError:
+            continue
+        if str(alt).isascii():
+            for k in ("JOBLIB_TEMP_FOLDER", "TMP", "TEMP", "TMPDIR"):
+                os.environ[k] = str(alt)
+            tempfile.tempdir = str(alt)
+            return
+
+
+_ascii_temp_dir()
+
+
+def _set_korean_font():
+    """OS에 설치된 한글 글꼴을 찾아 사용한다(없으면 기본 글꼴, 그림의 한글이 깨질 수 있음)."""
+    from matplotlib import font_manager
+    names = {f.name for f in font_manager.fontManager.ttflist}
+    for n in ("Malgun Gothic", "AppleGothic", "NanumGothic", "Noto Sans CJK KR", "Noto Sans KR", "UnDotum"):
+        if n in names:
+            plt.rcParams["font.family"] = n
+            return n
+    print("[주의] 한글 글꼴을 찾지 못했습니다. 그림의 한글이 깨질 수 있습니다 (Windows: 맑은 고딕, macOS: AppleGothic, Linux: fonts-nanum 설치).")
+
+
+_set_korean_font()
 plt.rcParams["axes.unicode_minus"] = False
 plt.rcParams["figure.dpi"] = 110
 
