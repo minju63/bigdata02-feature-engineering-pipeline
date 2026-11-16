@@ -1,5 +1,6 @@
 """공통 모듈: 데이터 로드, 파생 변수, 파이프라인 빌더 (Titanic)."""
 import warnings
+from functools import partial
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -88,6 +89,11 @@ MODELS = {
 SCALERS = {"standard": StandardScaler, "minmax": MinMaxScaler, "robust": RobustScaler, "none": None}
 
 
+def _n_keep(X, top_n=8, fallback=5):
+    """남길 열 수: 열이 top_n 개보다 많으면 top_n, 그렇지 않으면 fallback (변수 선택이 실제로 작동하도록)."""
+    return top_n if X.shape[1] > top_n else fallback
+
+
 def build_pipeline(model_name, impute="median", encode="onehot", scale="standard",
                    select=False, use_fe=True, top_n=8, model=None, base=False):
     """전체 ML Pipeline 객체를 생성한다.
@@ -95,7 +101,7 @@ def build_pipeline(model_name, impute="median", encode="onehot", scale="standard
     impute : mean | median | most_frequent  (수치형 결측치 전략; 범주형은 항상 most_frequent)
     encode : onehot | label
     scale  : standard | minmax | robust | none  (수치형에만 적용)
-    select : True 이면 RF 중요도 상위 top_n개 변수만 사용 (SelectFromModel, 파이프라인 내부 → 누수 없음)
+    select : True 이면 RF 중요도 상위 top_n개 변수만 사용 (열이 top_n개 이하이면 5개; SelectFromModel, 파이프라인 내부 → 누수 없음)
     base   : True 이면 결측 없는 원본 수치형 4개만 사용(전처리 없음)
     """
     est = model if model is not None else MODELS[model_name]()
@@ -120,7 +126,7 @@ def build_pipeline(model_name, impute="median", encode="onehot", scale="standard
     if select:
         steps.append(("select", SelectFromModel(
             RandomForestClassifier(n_estimators=200, random_state=SEED, n_jobs=1),
-            threshold=-np.inf, max_features=top_n)))
+            threshold=-np.inf, max_features=partial(_n_keep, top_n=top_n))))
     steps.append(("model", est))
     return Pipeline(steps)
 

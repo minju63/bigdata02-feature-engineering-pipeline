@@ -14,15 +14,20 @@ CV = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=SEED)
 BASECFG = dict(impute="mean", encode="onehot", scale="standard", use_fe=True)
 S = {}
 
-# ---- (1) RF 중요도 (전체 변수)
-pipe = build_pipeline("RandomForest", **BASECFG, select=False).fit(Xtr, ytr)
-names = feature_names(pipe)
-imp = pd.Series(pipe.named_steps["model"].feature_importances_, index=names).sort_values()
-plt.figure(figsize=(6.5, 7)); imp.plot.barh(color="#4C72B0")
-plt.title("Random Forest Feature Importance (전체 %d개 변수)" % len(imp)); plt.tight_layout()
+# ---- (1) RF 중요도: 파이프라인 안에서 실제로 쓰는 선택기(SelectFromModel의 RF)와 같은 모델로 계산
+pipe = build_pipeline("RandomForest", **BASECFG, select=True, top_n=8).fit(Xtr, ytr)
+names = [n.split("__", 1)[1] for n in pipe.named_steps["pre"].get_feature_names_out()]
+selector = pipe.named_steps["select"]
+imp = pd.Series(selector.estimator_.feature_importances_, index=names)
+chosen = list(np.array(names)[selector.get_support()])
+imp = imp.sort_values()
+plt.figure(figsize=(6.5, 7))
+plt.barh(imp.index, imp.values, color=["#C44E52" if n in chosen else "#4C72B0" for n in imp.index])
+plt.title("RF 중요도 (전체 %d개 열, 빨강 = 선택된 상위 8개)" % len(imp)); plt.tight_layout()
 plt.savefig(f"{OUT}/fs_importance.png"); plt.close()
 imp.sort_values(ascending=False).to_csv(f"{OUT}/fs_importance.csv")
 S["top8"] = list(imp.sort_values(ascending=False).index[:8])
+S["top8_selected"] = chosen
 S["n_features_all"] = len(imp)
 
 
@@ -45,7 +50,7 @@ fig, ax = plt.subplots(1, 2, figsize=(11, 3.8))
 for m, g in sw.groupby("model"):
     g = g.sort_values("top_n")
     ax[0].plot(g.top_n, g.cv_acc, "o-", label=m); ax[1].plot(g.top_n, g.gap, "o-", label=m)
-ax[0].set_title("선택 변수 수(N)별 CV 정확도"); ax[1].set_title("과적합 지표 (학습정확도 − CV정확도)")
+ax[0].set_title("선택 변수 수(N)별 CV 정확도"); ax[1].set_title("과적합 지표 (학습정확도 - CV정확도)")
 for a in ax: a.set_xlabel("상위 N개 변수 (%d = 전체)" % len(imp)); a.legend(fontsize=8)
 plt.tight_layout(); plt.savefig(f"{OUT}/fs_sweep.png"); plt.close()
 

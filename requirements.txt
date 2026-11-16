@@ -10,3 +10,4 @@ reportlab
 joblib
 pillow
 scipy
+flaml
